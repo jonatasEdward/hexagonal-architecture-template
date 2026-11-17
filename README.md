@@ -1,5 +1,8 @@
 # hexagonal-architecture-template
 
+[![CI](https://github.com/jonatasEdward/hexagonal-architecture-template/actions/workflows/ci.yml/badge.svg)](https://github.com/jonatasEdward/hexagonal-architecture-template/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Projeto base em Spring Boot organizado em arquitetura hexagonal (ports and adapters). Uso ele como ponto de partida para serviços novos e também como material de referência em aula.
 
 O domínio de exemplo é um cadastro de pedidos. É pequeno de propósito: dá para ler o projeto inteiro em meia hora e ainda assim ele cobre o que aparece num serviço real, como validação, regra de negócio, persistência, eventos, tratamento de erro e testes em cada camada.
@@ -81,7 +84,9 @@ O controle transacional está no adaptador de persistência. Para o exemplo isso
 
 O horário vem de um `Clock` injetado. Os testes usam `Clock.fixed` e não dependem da hora em que rodam.
 
-Os erros saem no formato Problem Details (RFC 9457). Validação de entrada retorna 400 com a lista de campos inválidos, pedido inexistente retorna 404 e violação de regra de negócio retorna 422.
+Concorrência é tratada com lock otimista. O `Order` carrega a versão que tinha quando foi lido, e o adaptador de persistência recusa a gravação se o banco já estiver em outra versão. O `@Version` da entidade JPA cobre a janela entre essa checagem e o flush. Na prática, se duas requisições cancelam o mesmo pedido ao mesmo tempo, uma passa e a outra recebe 409, em vez de uma sobrescrever a outra em silêncio.
+
+Os erros saem no formato Problem Details (RFC 9457). Validação de entrada retorna 400 com a lista de campos inválidos, pedido inexistente retorna 404, conflito de concorrência retorna 409 e violação de regra de negócio retorna 422.
 
 ## Endpoints
 
@@ -119,6 +124,19 @@ Um roteiro que funciona bem, usando como exemplo "confirmar pedido":
 
 Se o caso de uso precisar de algo novo do mundo externo (um gateway de pagamento, por exemplo), crie uma porta em `application/port/out` e um adaptador em `adapter/out`.
 
+## Limitações conhecidas e próximos passos
+
+Algumas simplificações são intencionais para manter o exemplo pequeno. Vale saber quais são antes de levar o template para produção.
+
+- **Eventos fora da transação.** O evento é publicado depois que o pedido é gravado. Se a publicação falhar, o pedido fica salvo sem o evento correspondente. Com um broker de verdade, o caminho é o padrão Transactional Outbox: gravar o evento numa tabela na mesma transação do pedido e publicar a partir dela.
+- **Dinheiro sem moeda.** `Money` guarda só o valor, com duas casas decimais. Um sistema com mais de uma moeda precisa de um campo de moeda e de regras para não somar valores de moedas diferentes.
+- **H2 nos testes de integração.** O H2 em modo PostgreSQL deixa os testes rápidos e sem Docker, mas não reproduz tudo do Postgres. Rodar os testes de integração com Testcontainers é o próximo passo natural.
+- **Ciclo de vida curto.** O pedido só tem os estados `CREATED` e `CANCELLED`. A seção abaixo mostra como acrescentar novas transições.
+
 ## Usando como template
 
 Ao criar um projeto a partir deste repositório, renomeie o pacote `com.example.orders`, ajuste `groupId` e `artifactId` no `pom.xml` e troque o domínio de pedidos pelo seu. A estrutura de pastas, a configuração de testes e o `ArchitectureTest` continuam valendo.
+
+## Licença
+
+Distribuído sob a licença MIT. Veja o arquivo [LICENSE](LICENSE).
