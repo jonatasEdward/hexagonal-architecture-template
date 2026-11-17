@@ -1,5 +1,6 @@
 package com.example.orders.adapter.in.web;
 
+import com.example.orders.application.exception.ConcurrentOrderUpdateException;
 import com.example.orders.application.exception.OrderNotFoundException;
 import com.example.orders.domain.exception.DomainException;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +25,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     public ProblemDetail handleOrderNotFound(OrderNotFoundException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Order not found");
+        return problem;
+    }
+
+    @ExceptionHandler(ConcurrentOrderUpdateException.class)
+    public ProblemDetail handleConcurrentUpdate(ConcurrentOrderUpdateException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Concurrent update");
         return problem;
     }
 

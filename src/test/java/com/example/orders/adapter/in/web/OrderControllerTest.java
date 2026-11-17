@@ -1,5 +1,6 @@
 package com.example.orders.adapter.in.web;
 
+import com.example.orders.application.exception.ConcurrentOrderUpdateException;
 import com.example.orders.application.exception.OrderNotFoundException;
 import com.example.orders.application.pagination.PageQuery;
 import com.example.orders.application.pagination.PageResult;
@@ -135,6 +136,16 @@ class OrderControllerTest {
         mockMvc.perform(post("/api/v1/orders/{id}/cancel", id.value()))
                 .andExpect(status().is(422))
                 .andExpect(jsonPath("$.title").value("Business rule violation"));
+    }
+
+    @Test
+    void returnsConflictWhenOrderWasModifiedConcurrently() throws Exception {
+        OrderId id = OrderId.newId();
+        given(cancelOrder.cancel(id)).willThrow(new ConcurrentOrderUpdateException(id));
+
+        mockMvc.perform(post("/api/v1/orders/{id}/cancel", id.value()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Concurrent update"));
     }
 
     private static Order sampleOrder() {

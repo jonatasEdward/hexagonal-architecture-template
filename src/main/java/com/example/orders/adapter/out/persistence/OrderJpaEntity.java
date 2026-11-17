@@ -10,6 +10,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import org.hibernate.annotations.BatchSize;
 
 import java.time.Instant;
@@ -38,6 +39,10 @@ public class OrderJpaEntity {
     @CollectionTable(name = "order_items", joinColumns = @JoinColumn(name = "order_id"))
     @BatchSize(size = 50)
     private List<OrderItemEmbeddable> items = new ArrayList<>();
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 
     protected OrderJpaEntity() {
     }
@@ -74,5 +79,9 @@ public class OrderJpaEntity {
 
     List<OrderItemEmbeddable> getItems() {
         return items;
+    }
+
+    Long getVersion() {
+        return version;
     }
 }

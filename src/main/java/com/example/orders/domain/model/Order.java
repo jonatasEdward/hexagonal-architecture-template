@@ -13,14 +13,17 @@ public final class Order {
     private final String customerId;
     private final List<OrderItem> items;
     private final Instant createdAt;
+    private final long version;
     private OrderStatus status;
 
-    private Order(OrderId id, String customerId, List<OrderItem> items, OrderStatus status, Instant createdAt) {
+    private Order(OrderId id, String customerId, List<OrderItem> items, OrderStatus status,
+                  Instant createdAt, long version) {
         this.id = Objects.requireNonNull(id);
         this.customerId = customerId;
         this.items = List.copyOf(items);
         this.status = Objects.requireNonNull(status);
         this.createdAt = Objects.requireNonNull(createdAt);
+        this.version = version;
     }
 
     public static Order create(String customerId, List<OrderItem> items, Instant createdAt) {
@@ -30,12 +33,12 @@ public final class Order {
         if (items == null || items.isEmpty()) {
             throw new DomainValidationException("an order must have at least one item");
         }
-        return new Order(OrderId.newId(), customerId, items, OrderStatus.CREATED, createdAt);
+        return new Order(OrderId.newId(), customerId, items, OrderStatus.CREATED, createdAt, 0L);
     }
 
     public static Order restore(OrderId id, String customerId, List<OrderItem> items,
-                                OrderStatus status, Instant createdAt) {
-        return new Order(id, customerId, items, status, createdAt);
+                                OrderStatus status, Instant createdAt, long version) {
+        return new Order(id, customerId, items, status, createdAt, version);
     }
 
     public void cancel() {
@@ -69,6 +72,10 @@ public final class Order {
 
     public Instant createdAt() {
         return createdAt;
+    }
+
+    public long version() {
+        return version;
     }
 
     @Override
