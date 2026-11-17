@@ -37,6 +37,7 @@ final class OrderPersistenceMapper {
                 entity.getCustomerId(),
                 items,
                 entity.getStatus(),
-                entity.getCreatedAt());
+                entity.getCreatedAt(),
+                entity.getVersion());
     }
 }
