@@ -3,6 +3,8 @@
 [![CI](https://github.com/jonatasEdward/hexagonal-architecture-template/actions/workflows/ci.yml/badge.svg)](https://github.com/jonatasEdward/hexagonal-architecture-template/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+> **English summary.** A Spring Boot starter built on hexagonal architecture (ports and adapters), with an orders domain small enough to read in half an hour. The domain and application layers have no framework annotations, and an ArchUnit test fails the build if they ever import Spring, JPA or Hibernate, or if adapters reach into each other. It ships with Flyway migrations, Problem Details errors, optimistic locking with `409 Conflict` on concurrent updates, an injected `Clock` for deterministic tests, Docker, and CI. The rest of this README is in Portuguese; the code and identifiers are in English. Click **Use this template** to start a new service from it.
+
 Projeto base em Spring Boot organizado em arquitetura hexagonal (ports and adapters). Uso ele como ponto de partida para serviços novos e também como material de referência em aula.
 
 O domínio de exemplo é um cadastro de pedidos. É pequeno de propósito: dá para ler o projeto inteiro em meia hora e ainda assim ele cobre o que aparece num serviço real, como validação, regra de negócio, persistência, eventos, tratamento de erro e testes em cada camada.
